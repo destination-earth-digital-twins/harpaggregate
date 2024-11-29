@@ -22,7 +22,7 @@
   DEODE = "awesome"
   DUSER = "aut6432"
   HUSER = "sp3c"
-  HARPSCRIPTS_HOME = "/home/sp3c/deode_project/oper-harp-verif/"
+  HARPSCRIPTS_HOME = "/home/sp3c/deode_project/deode_plugins/harpaggregate/"
   VERIF_HOME= "/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/"
   REF_SQLITES="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/FCTABLE/"
   OBSTABLES_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/OBSTABLE_MERGED/"
