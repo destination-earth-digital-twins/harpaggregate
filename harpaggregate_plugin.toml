@@ -1,0 +1,39 @@
+[general]
+  cscs = ["AROME","HARMONIE_AROME"]
+[general.plugin_registry.plugins]
+  harpaggregate = "/home/sp3c/deode_project/deode_plugins/"
+[suite_control]
+  suite_definition = "HarpaggregateSuiteDefinition"
+[submission]
+  submit_types = ["background_vm", "background_hpc", "parallel", "gnu", "serial", "harpaggregate_group"]
+
+[submission.harpaggregate_group]
+  SCHOST = "hpc"                             # Refers to the submission group in troika
+  tasks = ["Aggregate_scores", "Filesave"]
+  WRAPPER = ""
+
+[submission.harpaggregate_group.BATCH]
+  NAME = "#SBATCH --job-name=@TASK_NAME@"
+  NODES = "#SBATCH --nodes=1"
+  NTASKS = "#SBATCH --ntasks=1"
+  WALLTIME = "#SBATCH --time=01:05:00"
+
+[submission.harpaggregate_group.ENV]
+  DEODE = "awesome"
+  DUSER = "aut6432"
+  HUSER = "sp3c"
+  HARPSCRIPTS_HOME = "/home/sp3c/deode_project/oper-harp-verif/"
+  VERIF_HOME= "/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/"
+  REF_SQLITES="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/FCTABLE/"
+  OBSTABLES_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/OBSTABLE_MERGED/"
+  RDS_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases"
+  RDS_AGGREGATION_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases/AGGREGATED_SCORES"
+  REF_NAME="Global_DT"
+  ECFS_ARCHIVE_RELPATH="/deode/HARP_VERIF/cases/"
+  HARP_AGGREGATION_PLUGIN="/home/sp3c/deode_project/deode_plugins/harpaggregate"
+
+
+[submission.harpaggregate_group.MODULES]
+  ECFLOW = ["load", "ecflow"]
+  PYTHON311 = ["load", "python3/3.11.8-01"]
+  R433 = ["load", "R/4.3.3"]
