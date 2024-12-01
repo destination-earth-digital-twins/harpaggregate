@@ -9,7 +9,7 @@
 
 [submission.harpaggregate_group]
   SCHOST = "hpc"                             # Refers to the submission group in troika
-  tasks = ["Aggregate_scores", "Filesave"]
+  tasks = ["Aggregate_scores", "Aggreg_archive"]
   WRAPPER = ""
 
 [submission.harpaggregate_group.BATCH]
@@ -29,7 +29,7 @@
   RDS_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases"
   RDS_AGGREGATION_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases/AGGREGATED_SCORES"
   REF_NAME="Global_DT"
-  ECFS_ARCHIVE_RELPATH="/deode/HARP_VERIF/cases/"
+  ECFS_ARCHIVE_RELPATH="/deode/HARP_VERIF/cases/AGGREGATED_SCORES"
   HARP_AGGREGATION_PLUGIN="/home/sp3c/deode_project/deode_plugins/harpaggregate"
 
 

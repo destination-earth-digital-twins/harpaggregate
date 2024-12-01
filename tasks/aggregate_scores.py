@@ -32,7 +32,7 @@ class Aggregate_scores(Task):
             config_yaml_filename,exp_args = self.config_verif.write_config_yml(csc)
             print('Wrote config file for score aggregation of ' + csc + 'model')
             print(config_yaml_filename)
-            self.batch.run(f"{harp_scripts}/verification/aggregate_scores.R -config_file {config_yaml_filename}")
+            self.batch.run(f"{harp_scripts}/R/aggregate_scores.R -config_file {config_yaml_filename}")
 
 
 

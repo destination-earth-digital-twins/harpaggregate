@@ -54,8 +54,8 @@ class HarpaggregateSuiteDefinition(SuiteDefinition):
             self.ecf_files,
             input_template=python_template,
         )
-        filesave = EcflowSuiteTask(
-            "Filesave",
+        aggreg_archive = EcflowSuiteTask(
+            "Aggreg_archive",
             case_family,
             self.config,
             self.task_settings,

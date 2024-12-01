@@ -21,10 +21,13 @@ process_files <- function(config_file) {
   rds_aggregation_path <- config$aggregate$aggregation_path
   csc  <- config$aggregate$csc
   csc_string <- paste0(config$aggregate$csc, "_deode")
-
+  ref_model <- config$aggregate$ref_model
   # Loop through parameters and experiments
   for (param in params) {
     loaded_data <- list()
+    combined_stations <- vector()
+    combined_dttm <- vector()
+    file_attributes <- list()
 
     for (experiment in deode_runs) {
       experiment_path <- file.path(rds_path, csc, experiment)
@@ -34,6 +37,24 @@ process_files <- function(config_file) {
       if (length(matched_files) > 0) {
         for (file_path in matched_files) {
           file_data <- readRDS(file_path)
+
+          # Collect attributes
+          if (is.null(file_attributes$class)) {
+            file_attributes$class <- attr(file_data, "class")
+          }
+          if (is.null(file_attributes$parameter)) {
+            file_attributes$parameter <- attr(file_data, "parameter")
+          }
+          if (is.null(file_attributes$group_vars)) {
+            file_attributes$group_vars <- attr(file_data, "group_vars")
+          }
+          if (is.null(file_attributes$par_unit)) {
+            file_attributes$par_unit <- attr(file_data, "par_unit")
+          }
+
+          # Aggregate stations and dttm
+          combined_stations <- unique(c(combined_stations, attr(file_data, "stations")))
+          combined_dttm <- unique(c(combined_dttm, attr(file_data, "dttm")))
 
           # Process det_summary_scores and det_threshold_scores
           for (table_name in names(file_data)) {
@@ -98,6 +119,8 @@ process_files <- function(config_file) {
           summarize(
             across(where(is.numeric), ~ sum(. * num_cases_for_threshold_total, na.rm = TRUE) / sum(num_cases_for_threshold_total, na.rm = TRUE)),
             num_cases_for_threshold_total = sum(num_cases_for_threshold_total, na.rm = TRUE),
+	    num_cases_for_threshold_observed = sum(num_cases_for_threshold_observed, na.rm = TRUE),
+            num_cases_for_threshold_forecasted = sum(num_cases_for_threshold_forecast, na.rm = TRUE),
             num_stations = sum(num_stations, na.rm = TRUE),
             .groups = "drop"
           )
@@ -109,8 +132,23 @@ process_files <- function(config_file) {
         det_threshold_scores = aggregated_threshold
       )
 
-      # Save the combined aggregated data to a single RDS file  harpPointVerif.harp.T2m.harp.20241028-20241028.harp.Global_DT.model.CY48t3_AROME_nwp_ESP_20241028_flood_20241028.rds
-      output_file <- file.path(rds_aggregation_path, paste0("harpPointVerif.harp.", param, ".20241028-20241028.harp.Global_DT.model.",csc_string, ".rds"))
+      # Assign attributes to the aggregated data
+      attr(aggregated_data, "class") <- file_attributes$class
+      attr(aggregated_data, "parameter") <- file_attributes$parameter
+      attr(aggregated_data, "group_vars") <- file_attributes$group_vars
+      attr(aggregated_data, "par_unit") <- file_attributes$par_unit
+      attr(aggregated_data, "stations") <- combined_stations
+      attr(aggregated_data, "dttm") <- combined_dttm
+
+      # Save the combined aggregated data to a single RDS file
+      # Access the 'dttm' attribute to find the max and min values to use in the filename
+      dttm_values <- attr(aggregated_data, "dttm")
+      # Find  the minimum and maximum values
+      min_dttm <- min(dttm_values)
+      max_dttm <- max(dttm_values)
+      output_file <- file.path(rds_aggregation_path, paste0("harpPointVerif.harp.", param, ".harp.",as.character(min_dttm),"-",as.character(max_dttm),".harp.", ref_model, ".model.", csc_string, ".rds"))
+      #Delete det_threshold_scores table until debugging
+      aggregated_data$det_threshold_scores  <- NULL
       saveRDS(aggregated_data, output_file)
       message(sprintf("Saved aggregated data for '%s' to %s", param, output_file))
     } else {
