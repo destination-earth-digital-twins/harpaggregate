@@ -8,7 +8,7 @@ import pyproj
 import glob
 import subprocess
 from deode.toolbox import Platform
-
+import re
 
 class ConfigHarpaggregate(object):
     """description"""
@@ -33,6 +33,14 @@ class ConfigHarpaggregate(object):
         self.domain_name = self.config["domain.name"]
         self.start = self.platform.get_value("general.times.start")
         self.end = self.platform.get_value("general.times.end")
+        self.aggregate_start=os.environ.get("AGGREGATE_START")
+        self.aggregate_end=os.environ.get("AGGREGATE_END")
+        #self.aggregate_startyyyy=datetime.strptime(self.aggregate_start,"%Y%m%d").strftime("%Y")
+        #self.aggregate_startmm=datetime.strptime(self.aggregate_start,"%Y%m%d").strftime("%m")
+        #self.aggregate_startdd=datetime.strptime(self.aggregate_start,"%Y%m%d").strftime("%d")
+       # self.aggregate_endyyyy=datetime.strptime(self.aggregate_end,"%Y%m%d").strftime("%Y")
+       # self.aggregate_endmm=datetime.strptime(self.aggregate_end,"%Y%m%d").strftime("%m")
+        #self.aggregate_enddd=datetime.strptime(self.aggregate_end,"%Y%m%d").strftime("%d")
         self.startyyyymmddhh=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H")
         self.startyyyy=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y")
         self.startmm=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%m")
@@ -62,7 +70,7 @@ class ConfigHarpaggregate(object):
         """
         rds_path = os.path.join(self.rds_path,csc)
         config_template = os.path.join(self.home, "config_files/aggregate_conf.yml")
-        self.config_yaml_filename = os.path.join(self.home, f"config_files/aggregate_conf_{csc}.yml")
+        self.config_yaml_filename = os.path.join(self.home, f"config_files/aggregate_conf_{csc}_"+self.aggregate_start+f"_"+self.aggregate_end+f".yml")
         
         if os.path.isfile(config_template):
             # Load the template YAML configuration
@@ -71,25 +79,66 @@ class ConfigHarpaggregate(object):
             self._exp_args["aggregate"]["csc"] = csc
             self._exp_args["aggregate"]["ref_model"] = "Global_DT"
             self._exp_args["aggregate"]["rds_path"] = os.path.join(self.rds_path)
-            
+            self._exp_args["aggregate"]["start"]= self.aggregate_start
+            self._exp_args["aggregate"]["end"]= self.aggregate_end
+
+            # Regular expression to match YYYYMMDD pattern
+
+            date_pattern = re.compile(r"\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])")
+
             # Read folders in rds_path and set to deode_runs
+            # Read folders in rds_path and filter for valid deode_runs
             try:
-                deode_runs = [folder for folder in os.listdir(rds_path) if os.path.isdir(os.path.join(rds_path, folder))]
-                self._exp_args["aggregate"]["deode_runs"] = deode_runs
+               deode_runs = []
+               print(os.path.join(self.rds_path))
+               print(self.rds_path)
+               for root, dirs, files in os.walk(self._exp_args["aggregate"]["rds_path"]):
+                  depth = len(root.split(os.sep)) - len(self._exp_args["aggregate"]["rds_path"].split(os.sep))
+                  print('start_date es')
+                  print(self.aggregate_start)
+                  print('root es')
+                  print(root)
+                  print(dirs)
+                  if depth == 6:
+                         print('depth is 6')
+                         last_component = os.path.basename(root)
+                         print(last_component)
+                         print('csc to find is')
+                         print(self._exp_args["aggregate"]["csc"])
+                         # Check if last component starts with the specified prefix
+                         if last_component.startswith(self._exp_args["aggregate"]["csc"]):
+                           print('processing for list')
+                           match = date_pattern.search(last_component)
+                           if match:
+                              try:
+                                print('match done')
+                                date_str = match.group(0)
+                                date = datetime.strptime(date_str, "%Y%m%d")
+                                # Check if the date is in the specified range
+                                start_date = datetime.strptime(self._exp_args["aggregate"]["start"], "%Y%m%d")
+                                end_date = datetime.strptime(self._exp_args["aggregate"]["end"], "%Y%m%d")
+                                if start_date <= date <= end_date:
+                                  print('appending')
+                                  sanitized_root = root.replace(self._exp_args["aggregate"]["rds_path"], "", 1)  # Replace only the first occurrence
+                                  deode_runs.append(sanitized_root)
+                              except ValueError:
+                                # Skip folders with invalid date formats
+                                continue
+               self._exp_args["aggregate"]["deode_runs"] = deode_runs
+
             except FileNotFoundError:
-                print(f"The directory {rds_path} does not exist.")
-                self._exp_args["aggregate"]["deode_runs"] = []
-        
+               print(f"The directory {self._exp_args['aggregate']['rds_path']} does not exist.")
+               self._exp_args["aggregate"]["deode_runs"] = []
+
             # Set aggregation path
-            self._exp_args["aggregate"]["aggregation_path"] = os.path.join(self.rds_path,'AGGREGATED_SCORES', csc)
-        
+            self._exp_args["aggregate"]["aggregation_path"] = os.path.join(self.rds_path, 'AGGREGATED_SCORES', csc)
+
             # Write to the YAML file if specified
             if write:
                 ConfigHarpaggregate.save_yaml(self.config_yaml_filename, self._exp_args)
                 print("Wrote YAML file at " + self.config_yaml_filename)
         else:
             print("Template config file not found")
-    
         return self.config_yaml_filename, self._exp_args
 
 

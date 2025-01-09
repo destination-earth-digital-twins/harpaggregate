@@ -30,7 +30,7 @@ process_files <- function(config_file) {
     file_attributes <- list()
 
     for (experiment in deode_runs) {
-      experiment_path <- file.path(rds_path, csc, experiment)
+      experiment_path <- file.path(rds_path, experiment)
       pattern <- paste0("harpPointVerif.harp.", param, ".harp.*")
       matched_files <- list.files(experiment_path, pattern = pattern, full.names = TRUE)
 

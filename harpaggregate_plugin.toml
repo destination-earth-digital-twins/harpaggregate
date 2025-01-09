@@ -26,12 +26,13 @@
   VERIF_HOME= "/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/"
   REF_SQLITES="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/FCTABLE/"
   OBSTABLES_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/OBSTABLE_MERGED/"
-  RDS_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases"
-  RDS_AGGREGATION_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases/AGGREGATED_SCORES"
+  RDS_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases/iekm/"
+  RDS_AGGREGATION_PATH="/ec/res4/hpcperm/sp3c/deode_project/deode_harp_output/cases/AGGREGATED_SCORES/iekm"
   REF_NAME="Global_DT"
-  ECFS_ARCHIVE_RELPATH="/deode/HARP_VERIF/cases/AGGREGATED_SCORES"
+  ECFS_ARCHIVE_RELPATH="/deode/HARP_VERIF/cases/iekm/AGGREGATED_SCORES"
   HARP_AGGREGATION_PLUGIN="/home/sp3c/deode_project/deode_plugins/harpaggregate"
-
+  AGGREGATE_START="20241101"
+  AGGREGATE_END="20241231"
 
 [submission.harpaggregate_group.MODULES]
   ECFLOW = ["load", "ecflow"]
