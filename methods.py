@@ -33,14 +33,8 @@ class ConfigHarpaggregate(object):
         self.domain_name = self.config["domain.name"]
         self.start = self.platform.get_value("general.times.start")
         self.end = self.platform.get_value("general.times.end")
-        self.aggregate_start=os.environ.get("AGGREGATE_START")
-        self.aggregate_end=os.environ.get("AGGREGATE_END")
-        #self.aggregate_startyyyy=datetime.strptime(self.aggregate_start,"%Y%m%d").strftime("%Y")
-        #self.aggregate_startmm=datetime.strptime(self.aggregate_start,"%Y%m%d").strftime("%m")
-        #self.aggregate_startdd=datetime.strptime(self.aggregate_start,"%Y%m%d").strftime("%d")
-       # self.aggregate_endyyyy=datetime.strptime(self.aggregate_end,"%Y%m%d").strftime("%Y")
-       # self.aggregate_endmm=datetime.strptime(self.aggregate_end,"%Y%m%d").strftime("%m")
-        #self.aggregate_enddd=datetime.strptime(self.aggregate_end,"%Y%m%d").strftime("%d")
+        self.aggregate_start=self.platform.get_value("submission.harpaggregate_group.ENV.AGGREGATE_START")
+        self.aggregate_end=self.platform.get_value("submission.harpaggregate_group.ENV.AGGREGATE_END")
         self.startyyyymmddhh=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H")
         self.startyyyy=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y")
         self.startmm=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%m")
@@ -60,6 +54,11 @@ class ConfigHarpaggregate(object):
         self.config_yaml = None
         self.config_yaml_filename = None
         self.ecfs_archive_relpath = os.environ.get("ECFS_ARCHIVE_RELPATH")
+        print("aggregate_start es")
+        print(self.aggregate_start)
+        print("REF_SQLITES es")
+        print(self.sqlites_ref_path)
+
 
     def write_config_yml(self,csc,write=True):
         """descrp.
