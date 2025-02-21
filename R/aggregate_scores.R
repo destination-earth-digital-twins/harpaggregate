@@ -90,13 +90,13 @@ process_files <- function(config_file) {
         group_by(fcst_model, lead_time, station_group, valid_hour, valid_dttm) %>%
         summarize(
           bias = sum(bias * num_cases, na.rm = TRUE) / sum(num_cases, na.rm = TRUE),
-          rmse = sum(rmse * num_cases, na.rm = TRUE) / sum(num_cases, na.rm = TRUE),
+          rmse = sqrt(sum(num_cases * rmse^2, na.rm = TRUE) / sum(num_cases, na.rm = TRUE)),  # Pooled RMSE
           mae = sum(mae * num_cases, na.rm = TRUE) / sum(num_cases, na.rm = TRUE),
-          stde = sum(stde * num_cases, na.rm = TRUE) / sum(num_cases, na.rm = TRUE),
+          stde = sqrt(sum((num_cases - 1) * stde^2, na.rm = TRUE) / sum(num_cases - 1, na.rm = TRUE)),  # Pooled Stdev
           num_cases = sum(num_cases, na.rm = TRUE),
           num_stations = sum(num_stations, na.rm = TRUE),
           .groups = "drop"
-        )
+  )
 
       # Aggregate det_threshold_scores
       combined_threshold <- do.call(rbind, lapply(loaded_data, function(x) {
