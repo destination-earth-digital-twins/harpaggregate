@@ -20,12 +20,24 @@ class ConfigHarpaggregate(object):
             config (deode.ParsedConfig): Configuration
 
         """
+        def forecast_range_to_hours(forecast_range):
+            match = re.fullmatch(r'P(\d+)D|PT(\d+)H', forecast_range)
+            if match:
+                days = match.group(1)
+                hours = match.group(2)
+                
+                if days:
+                    return int(days) * 24  # Convert days to hours
+                elif hours:
+                    return int(hours)  # Already in hours
+            raise ValueError(f"Invalid forecast_range format: {forecast_range}")
+
         self.config = config
-        self.home = os.environ.get("VERIF_HOME")
-        self.huser = os.environ.get("HUSER")
-        self.duser= os.environ.get("DUSER")
-        self.harpscripts_home=os.environ.get("HARPSCRIPTS_HOME")
         self.platform = Platform(config)      
+        self.home = self.platform.get_value("submission.harpaggregate_group.ENV.VERIF_HOME")
+        self.huser = self.platform.get_value("submission.harpaggregate_group.ENV.HUSER")
+        self.duser= self.platform.get_value("submission.harpaggregate_group.ENV.DUSER")
+        self.harpscripts_home=self.platform.get_value("submission.harpaggregate_group.ENV.HARPSCRIPTS_HOME")
         self.cnmexp = self.config["general.cnmexp"]
         self.csc = self.config["general.csc"]
         self.cscs = self.config["general.cscs"]
@@ -38,22 +50,27 @@ class ConfigHarpaggregate(object):
         self.startyyyymmddhh=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H")
         self.startyyyy=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y")
         self.startmm=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%m")
-        self.endyyyymmddhh=datetime.strptime(self.end, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H")
+        self.startdd=datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ").strftime("%d")
         self.cycle_length = self.platform.get_value("general.times.cycle_length")
         self.forecast_range = self.platform.get_value("general.times.forecast_range")
+        self.cycle_length_nr = forecast_range_to_hours(self.cycle_length)
+        self.forecast_range_nr = forecast_range_to_hours(self.forecast_range)
+        self.forecast_range = self.platform.get_value("general.times.forecast_range")
+        self.endyyyymmddhh = (datetime.strptime(self.start, "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=self.forecast_range_nr)).strftime("%Y%m%d%H")
         self.exp = self._set_exp()
-        self.case = self.platform.get_value("general.case")
+        self.case_prefix=self.platform.get_value("scheduler.ecfvars.case_prefix")
+        self.case = self.platform.get_value("general.case").removeprefix(self.case_prefix) # Remove case_prefix from suite name to get correct case names.
         self.sqlites_exp_path=self.platform.get_value("extractsqlite.sqlite_path")
-        self.sqlites_ref_path=os.environ.get("REF_SQLITES")
-        self.rds_path=os.environ.get("RDS_PATH")
-        self.sqlites_obs_path=os.environ.get("OBSTABLES_PATH")
-        self.ref_name=os.environ.get("REF_NAME")
-        self.harp_aggregation_plugin=os.environ.get("HARP_AGGREGATION_PLUGIN")
+        self.sqlites_ref_path=self.platform.get_value("submission.harpaggregate_group.ENV.REF_SQLITES")
+        self.rds_path=self.platform.get_value("submission.harpaggregate_group.ENV.RDS_PATH")
+        self.sqlites_obs_path=self.platform.get_value("submission.harpaggregate_group.ENV.OBSTABLES_PATH")
+        self.ref_name=self.platform.get_value("submission.harpaggregate_group.ENV.REF_NAME")
+        self.harp_aggregation_plugin=self.platform.get_value("submission.harpaggregate_group.ENV.HARP_AGGREGATION_PLUGIN")
         self._case_args = None
         self._exp_args = None
         self.config_yaml = None
         self.config_yaml_filename = None
-        self.ecfs_archive_relpath = os.environ.get("ECFS_ARCHIVE_RELPATH")
+        self.ecfs_archive_relpath = self.platform.get_value("submission.harpaggregate_group.ENV.ECFS_ARCHIVE_RELPATH")
         print("aggregate_start es")
         print(self.aggregate_start)
         print("REF_SQLITES es")

@@ -1,5 +1,5 @@
 [general]
-  cscs = ["AROME","HARMONIE_AROME"]
+  cscs = ["HARMONIE_AROME","AROME","ALARO"]
 [general.plugin_registry.plugins]
   harpaggregate = "/home/sp3c/deode_project/deode_plugins/"
 [suite_control]
@@ -32,7 +32,7 @@
   ECFS_ARCHIVE_RELPATH="/deode/HARP_VERIF/cases/iekm/AGGREGATED_SCORES"
   HARP_AGGREGATION_PLUGIN="/home/sp3c/deode_project/deode_plugins/harpaggregate"
   AGGREGATE_START="20241101"
-  AGGREGATE_END="20241231"
+  AGGREGATE_END="20250320"
 
 [submission.harpaggregate_group.MODULES]
   ECFLOW = ["load", "ecflow"]
